@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Weather App</title>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        {% load static %}
+        <link rel="stylesheet" href="{% static "style.css" %}">
+    </head>
+    <body>
+        <div class="title">
+        <h1>My Weather App</h1>
+    </div>
+    <div class="card">
+        <form method="POST" action="{% url "weather" %}" id="weather-form">
+            {% csrf_token %}
+            <div class="search">
+                <input type="text" placeholder="Enter city" id="city-search" name="city" value="{% if city %} {{city}} {% endif %}" />
+                <button id="search-button">
+                    <img src="{% static "images/search-icon.svg" %}" alt="Search">
+                </button>
+    
+                <ul id="city-dropdown" class="dropdown"></ul>
+            </div>
+        </form>
+        <div class="weather-details" {% if not weather %} style="display: none;" {% endif %}>
+            <div class="city">
+                Latitude: {{ weather.latitude }},
+                Longitude: {{ weather.longitude }}
+            </div>
+            <div class="weather">
+                <h1 class="temp">
+                    {{ weather.current_weather.temperature  }} °C
+                </h1>
+                <h2 class="description">
+                    {% if weather.current_weather.weathercode == 0 %}
+                        Clear Sky
+                    {% elif weather.current_weather.weathercode <= 3 %}
+                        Cloudy
+                    {% elif weather.current_weather.weathercode >= 51 and weather.current_weather.weathercode <= 67 %}
+                        Rain
+                    {% elif weather.current_weather.weathercode >= 71 %}
+                        Snow
+                    {% else %}
+                        Unknown Weather
+                    {% endif %}
+                </h2>
+                <p class="time">
+                    Updated: {{ weather.current_weather.time }}
+                </p>
+            </div>
+            <img class="weather-icon" src="{% static 'images/cloudy.svg' %}" alt="Weather icon">
+            <div class="details">
+                {% comment %} <div class="col">
+                    <img src="assets/img/humidity-icon.svg" alt="Humidity icon" />
+                    <span class="humidity">
+                        {{ weather.current_weather.windspeed }} km/h
+                    </span>
+                </div> {% endcomment %}
+                <div class="col justify-content-evenly">
+                    <img src="{% static "images/winds.svg" %}" alt="Wind icon" />
+                    <span class="wind">
+                        {{ weather.current_weather.windspeed }} km/h
+                    </span>
+                </div>
+                <div class="col justify-content-center">
+                    {% comment %} <img src="assets/img/wind-icon.svg" alt="Wind icon" /> {% endcomment %}
+                    <span class="direction">
+                        Wind Direction: {{ weather.current_weather.winddirection }}°
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% load static %}
+    <script src="{% static "app.js" %}"></script>
+    </body>
+</html>
