@@ -83,14 +83,19 @@ let debounceTimer = null;
 input.addEventListener("keyup", () => {
     const query = input.value.trim();
 
-    // clearTimeout(debounceTimer);
+    clearTimeout(debounceTimer);
 
     if (query.length < 2) {
         dropdown.style.display = "none";
         return;
     }
-    fetchCities(query);
+    
     // debounce to avoid too many requests
+    // search after 1 second
+    debounceTimer = setTimeout(() => {
+        fetchCities(query);
+    }, 700); // ← time control (ms)
+
     // debounceTimer = setTimeout(() => {
     //     fetchCities(query);
     // }, 400);

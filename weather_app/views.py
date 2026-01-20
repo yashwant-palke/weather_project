@@ -26,31 +26,56 @@ def get_coordinates(request):
 
 def weather(request):
     search = request.POST.get("city").split(",")
-    city = search[0]
-    state = search[1].strip()
-    country = search[2].strip()
+    # raise Exception(search)
+     
+    if len(search) >= 1:
+        city = search[0].strip()
+    else:
+        return JsonResponse({"error": "Invalid city input"}, status=400)
+    
+    state = search[1].strip() if len(search) >= 2 else None
+    country = search[2].strip() if len(search) == 3 else None
+    
     # raise Exception(city, state, country)
+
+    # ---------- GEO CODING ----------
     url = "https://geocoding-api.open-meteo.com/v1/search"
     params = {"name": city}
     response = requests.get(url, params=params).json()
     # return JsonResponse(response)
-    if "results" not in response:
+    if "results" not in response or not response["results"]:
         return JsonResponse({"error": "City not found"}, status=404)
-    else:
-        filtered = [
-            r for r in response["results"]
-            if r.get("country") == country
-            and r.get("admin1") == state
-        ]
-        response["results"] = filtered
-    # return JsonResponse(response)
-    lat = response["results"][0]["latitude"]
-    lon = response["results"][0]["longitude"]
 
-    weather_data = requests.get(
-        "https://api.open-meteo.com/v1/forecast",
-        params={"latitude": lat, "longitude": lon, "current_weather": True}
-    ).json()
+    results = response["results"]
+    # filtering only when data exists
+    if country:
+        results = [
+            r for r in results
+            if r.get("country", "").lower() == country.lower()
+        ]
+
+    if state:
+        results = [
+            r for r in results
+            if r.get("admin1", "").lower() == state.lower()
+        ]
+
+    if not results:
+        return JsonResponse({"error": "No matching location found"}, status=404)
+
+    response["results"] = results
+    
+    # return JsonResponse(response)
+    weather_list = []
+    for res in response["results"]:
+        lat = res["latitude"]
+        lon = res["longitude"]
+
+        # ---------- WEATHER ----------
+        weather_data = requests.get(
+            "https://api.open-meteo.com/v1/forecast",
+            params={"latitude": lat, "longitude": lon, "current_weather": True}
+        ).json()
 
     # {
     #     # "latitude": 22.125,
@@ -80,43 +105,53 @@ def weather(request):
     #     }
     # }
     # return JsonResponse(weather)
-    code = weather_data["current_weather"]["weathercode"]
+        code = weather_data["current_weather"]["weathercode"]
 
-    if code == 0:
-        condition = "Clear Sky"
-        icon = "clear.svg"
-    elif 1 <= code <= 3:
-        condition = "Cloudy"
-        icon = "cloudy.svg"     # done
-    elif 45 <= code <= 48:
-        condition = "Mist / Fog"
-        icon = "mist.svg"
-    elif 51 <= code <= 57:
-        condition = "Drizzle"
-        icon = "drizzle.svg"
-    elif 61 <= code <= 67:
-        condition = "Rain"
-        icon = "rain.svg"       # done
-    elif 71 <= code <= 77:
-        condition = "Snow"
-        icon = "snow.svg"
-    elif 80 <= code <= 82:
-        condition = "Rain Showers"
-        icon = "showers.svg"
-    elif 85 <= code <= 86:
-        condition = "Snow Showers"
-        icon = "snow.svg"
-    elif 95 <= code <= 99:
-        condition = "Thunderstorm"
-        icon = "thunder.svg"
-    else:
-        condition = "Unknown"
-        icon = "default.svg"
+        if code == 0:
+            condition = "Clear Sky"
+            icon = "images/we/Clear_sky.png"
+        elif 1 <= code <= 3:
+            condition = "Cloudy"
+            icon = "images/we/cloudy.png"
+        elif 45 <= code <= 48:
+            condition = "Mist / Fog"
+            icon = "images/we/mist_fog.png"
+        elif 51 <= code <= 57:
+            condition = "Drizzle"
+            icon = "images/we/drizzle.png"
+        elif 61 <= code <= 67:
+            condition = "Rain"
+            icon = "images/we/cloud-rain.svg"
+        elif 71 <= code <= 77:
+            condition = "Snow"
+            icon = "images/we/snow.svg"
+        elif 80 <= code <= 82:
+            condition = "Rain Showers"
+            icon = "images/we/weather-rain-showers-day.svg"
+        elif 85 <= code <= 86:
+            condition = "Snow Showers"
+            icon = "images/we/snow.svg"
+        elif 95 <= code <= 99:
+            condition = "Thunderstorm"
+            icon = "images/we/thunderstrom.png"
+        else:
+            condition = "Unknown"
+            icon = "images/default.svg"
 
-    
-    return render(request, "index.html", {
-        "weather": weather_data,
-        "city": f"{city}, {state}, {country}",
-        "condition": condition,
-        "icon": icon
-    })
+        weather_list.append({
+            "city": res.get("name"),
+            "state": res.get("admin1"),
+            "country": res.get("country"),
+            "location": f'{res.get("name")}, {res.get("admin1")}, {res.get("country")}',
+            "latitude": lat,
+            "longitude": lon,
+            "temperature": weather_data["current_weather"]["temperature"],
+            "windspeed": weather_data["current_weather"]["windspeed"],
+            "weathercode": code,
+            "condition": condition,
+            "icon": icon,
+            "time": weather_data["current_weather"]["time"],
+            "direction": weather_data["current_weather"]["winddirection"],
+        })
+
+    return render(request, "index.html", {"weather_list": weather_list})

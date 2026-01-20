@@ -17,67 +17,66 @@
         <h1>My Weather App</h1>
     </div>
     <div class="card">
-        <form method="POST" action="{% url "weather" %}" id="weather-form">
+        <form method="POST" action="{% url 'weather' %}" id="weather-form">
             {% csrf_token %}
             <div class="search">
-                <input type="text" placeholder="Enter city" id="city-search" name="city" value="{% if city %} {{city}} {% endif %}" />
+                <input type="text" placeholder="Enter city" id="city-search" name="city" />
                 <button id="search-button">
-                    <img src="{% static "images/search-icon.svg" %}" alt="Search">
+                    <img src="{% static 'images/search-icon.svg' %}" alt="Search">
                 </button>
     
                 <ul id="city-dropdown" class="dropdown"></ul>
             </div>
         </form>
-        <div class="weather-details" {% if not weather %} style="display: none;" {% endif %}>
-            <div class="city">
-                Latitude: {{ weather.latitude }},
-                Longitude: {{ weather.longitude }}
-            </div>
-            <div class="weather">
-                <h1 class="temp">
-                    {{ weather.current_weather.temperature  }} °C
-                </h1>
-                <h2 class="description">
-                    {% if weather.current_weather.weathercode == 0 %}
-                        Clear Sky
-                    {% elif weather.current_weather.weathercode <= 3 %}
-                        Cloudy
-                    {% elif weather.current_weather.weathercode >= 51 and weather.current_weather.weathercode <= 67 %}
-                        Rain
-                    {% elif weather.current_weather.weathercode >= 71 %}
-                        Snow
-                    {% else %}
-                        Unknown Weather
-                    {% endif %}
-                </h2>
-                <p class="time">
-                    Updated: {{ weather.current_weather.time }}
-                </p>
-            </div>
-            <img class="weather-icon" src="{% static 'images/cloudy.svg' %}" alt="Weather icon">
-            <div class="details">
-                {% comment %} <div class="col">
-                    <img src="assets/img/humidity-icon.svg" alt="Humidity icon" />
-                    <span class="humidity">
-                        {{ weather.current_weather.windspeed }} km/h
-                    </span>
-                </div> {% endcomment %}
-                <div class="col justify-content-evenly">
-                    <img src="{% static "images/winds.svg" %}" alt="Wind icon" />
-                    <span class="wind">
-                        {{ weather.current_weather.windspeed }} km/h
-                    </span>
+        <div class="weather-details" {% if not weather_list %} style="display: none;" {% endif %}>
+            {% for weather in weather_list %}
+                <div class="city">
+                    <p>{{ weather.location }}</p>
+                    Latitude: {{ weather.latitude }},
+                    Longitude: {{ weather.longitude }}
                 </div>
-                <div class="col justify-content-center">
-                    {% comment %} <img src="assets/img/wind-icon.svg" alt="Wind icon" /> {% endcomment %}
-                    <span class="direction">
-                        Wind Direction: {{ weather.current_weather.winddirection }}°
-                    </span>
+                <div class="weather">
+                    <h1 class="temp">
+                        {{ weather.temperature  }} °C
+                    </h1>
+                    <h2 class="description">
+                        {% if weather.weathercode == 0 %}
+                            Clear Sky
+                        {% elif weather.weathercode <= 3 %}
+                            Cloudy
+                        {% elif weather.weathercode >= 51 and weather.weathercode <= 67 %}
+                            Rain
+                        {% elif weather.weathercode >= 71 %}
+                            Snow
+                        {% else %}
+                            Unknown Weather
+                        {% endif %}
+                    </h2>
+                    {% comment %} <p class="time">
+                        Updated: {{ weather.time }}
+                    </p> {% endcomment %}
                 </div>
-            </div>
+                
+                <img class="weather-icon" src="{% static weather.icon %}" alt="Weather icon">
+                <div class="details">
+                    <div class="col">
+                        <img src="/static/images/humidity-icon.svg" alt="Humidity icon" />
+                        <span class="humidity">
+                            {{ weather.windspeed }} km/h
+                        </span>
+                    </div>
+
+                    <div class="col justify-content-center">
+                        <img src="{% static 'images/winds.svg' %}" alt="Wind icon" />
+                        <span class="direction">
+                            Wind Direction: {{ weather.direction }}°
+                        </span>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
     </div>
     {% load static %}
-    <script src="{% static "app.js" %}"></script>
+    <script src="{% static 'app.js' %}"></script>
     </body>
 </html>
