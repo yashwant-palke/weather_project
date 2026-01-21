@@ -1,4 +1,4 @@
-</h3>🌦️ Weather Forecast Web Application (Django)</h3>
+</h2>🌦️ Weather Forecast Web Application (Django)</h2>
 
 <h4>This is a simple Weather Forecast Web Application built with Django that allows users to enter a city name and view current weather information using a third-party weather API.</h4>
 
