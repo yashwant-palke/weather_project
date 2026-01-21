@@ -26,9 +26,9 @@
 3. API: Open-Meteo Weather API
 
 
-🌐 Third-Party API
+<h2>🌐 Third-Party API</h2>
 
-Weather data is fetched from:
+<h3>Weather data is fetched from:</h3>
 
-[API](https://api.open-meteo.com/v1/forecast)
-The API provides weather details such as temperature, wind speed, and weather conditions based on latitude and longitude.
+<h4>https://api.open-meteo.com/v1/forecast</h4>
+<h4>The API provides weather details such as temperature, wind speed, and weather conditions based on latitude and longitude.</h4>
